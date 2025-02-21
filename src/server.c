@@ -1,9 +1,19 @@
 #include "socket.h"
 #include <arpa/inet.h> // inet_ntoa()
 #include <stdio.h>
+#include <signal.h>
+#include <sys/wait.h>
+#include "server.h"
+
+
 #define SA struct sockaddr
 
 static in_port_t PORT = 0;
+
+void signal_handler(int connfd)
+{
+    return;
+}
 
 void server_start_listening()
 {
@@ -38,6 +48,10 @@ void server_start_listening()
         case 0: // child process
             close(sockfd);
             // handler
+            while (1)
+            {
+                
+            }
             close(connfd);
             exit(EXIT_SUCCESS);
             break;
@@ -45,17 +59,24 @@ void server_start_listening()
             exit(EXIT_FAILURE);
             break;
         default: // parent process
+
+            signal(SIGCHLD, wait_handler);
+
             close(connfd);
             break;
         }
-
+        // function for chat
+        // func(connfd);
     }
-
-    // function for chat
-    // func(connfd);
 
     // After chatting close the socket
     close(sockfd);
+}
+
+void wait_handler(int sig)
+{
+    wait(NULL);
+    printf("connected socket closed\n");
 }
 
 // void get_ip_address()

@@ -14,5 +14,5 @@ void print_help(const char* port)
     printf("7. send <connection id> <message>\t: Send a message to the connection\n");
     printf("8. exit\t\t\t\t\t: Close all connections and terminate this app\n");
     printf("***************************************************************\n");
-    printf("Application listening on port %s\n", port);
+    // printf("Application listening on port %s\n", port);
 }

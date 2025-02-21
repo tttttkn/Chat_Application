@@ -32,10 +32,10 @@ void listening_socket(int sockfd, struct sockaddr_in *servaddr)
         printf("Listen failed...\n");
         exit(0);
     }
-    // else
-    // {
-    //     printf("Application listening on port %d\n", ntohs(servaddr->sin_port));
-    // }
+    else
+    {
+        printf("Application listening on port %d\n", ntohs(servaddr->sin_port));
+    }
 }
 
 void connect_to_socket(int sockfd, struct sockaddr_in *servaddr)
