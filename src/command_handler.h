@@ -11,10 +11,11 @@ void get_input_from_user(char *buff);
 
 void command_handler();
 
-void send_message(int sockfd, const char *message);
-
 User_input *get_command_from_user(char buff[]);
 
-bool command_parser(User_input *command);
+bool command_parser(char *words[]);
+
+void split_cmd_parser(char *buf, char *words[]);
+
 
 #endif

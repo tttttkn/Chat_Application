@@ -18,7 +18,7 @@ int create_socket()
     }
 }
 
-void listening_socket(int sockfd, struct sockaddr_in *servaddr)
+void listening_socket(int sockfd, struct sockaddr_in *servaddr, uint16_t max_clients)
 {
 
     if ((bind(sockfd, (SA *)servaddr, sizeof(*servaddr))) != 0)
@@ -27,7 +27,7 @@ void listening_socket(int sockfd, struct sockaddr_in *servaddr)
         exit(0);
     }
 
-    if ((listen(sockfd, 5)) != 0)
+    if ((listen(sockfd, max_clients)) != 0)
     {
         printf("Listen failed...\n");
         exit(0);
@@ -42,7 +42,7 @@ void connect_to_socket(int sockfd, struct sockaddr_in *servaddr)
 {
     if (connect(sockfd, (SA *)servaddr, sizeof(*servaddr)) != 0)
     {
-        printf("connection with the server failed...\n");
+        printf("connection to %s failed...\n", inet_ntoa(servaddr->sin_addr));
         exit(0);
     }
     else

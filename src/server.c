@@ -4,20 +4,15 @@
 #include <signal.h>
 #include <sys/wait.h>
 #include "server.h"
+#include "connection_handler.h"
 
+in_port_t SERV_PORT = 0;
 
-#define SA struct sockaddr
-
-static in_port_t PORT = 0;
-
-void signal_handler(int connfd)
-{
-    return;
-}
+// cli_data_t cli_data[MAXNCLI];
 
 void server_start_listening()
 {
-    int sockfd, connfd, len, pid;
+    int sockfd, connfd, len, pid, ncli;
     struct sockaddr_in cli;
     struct sockaddr_in servaddr;
 
@@ -26,12 +21,12 @@ void server_start_listening()
 
     servaddr.sin_family = AF_INET;
     servaddr.sin_addr.s_addr = htonl(INADDR_ANY);
-    servaddr.sin_port = htons(PORT);
+    servaddr.sin_port = htons(SERV_PORT);
 
-    listening_socket(sockfd, &servaddr);
+    listening_socket(sockfd, &servaddr, MAXNCLI);
 
     len = sizeof(cli);
-
+    // ncli = 0;
     while (1)
     {
         connfd = accept(sockfd, (SA *)&cli, &len);
@@ -40,43 +35,30 @@ void server_start_listening()
             printf("server acccept failed...\n");
             exit(0);
         }
+        cli_data_t cli_data;
+        cli_data.connfd = connfd;
+        cli_data.ip_address = inet_ntoa(cli.sin_addr);
+        // ncli++;
+        pthread_create(&cli_data.thread_id, NULL, (void *)&thread_cli_handler, &cli_data);
 
-        pid = fork();
+        pthread_mutex_lock(&mutex);
+        pthread_cond_wait(&cond, &mutex);
+        pthread_mutex_unlock(&mutex);
 
-        switch (pid)
-        {
-        case 0: // child process
-            close(sockfd);
-            // handler
-            while (1)
-            {
-                
-            }
-            close(connfd);
-            exit(EXIT_SUCCESS);
-            break;
-        case -1: // fork failed
-            exit(EXIT_FAILURE);
-            break;
-        default: // parent process
-
-            signal(SIGCHLD, wait_handler);
-
-            close(connfd);
-            break;
-        }
-        // function for chat
-        // func(connfd);
+        // pthread_join(cli_data.thread_id, NULL);
     }
 
     // After chatting close the socket
     close(sockfd);
 }
 
-void wait_handler(int sig)
+void thread_cli_handler(void* arg)
 {
-    wait(NULL);
-    printf("connected socket closed\n");
+    pthread_detach(pthread_self());
+    cli_data_t cli_data = *((cli_data_t*) arg);
+    add_connection_data(cli_data.ip_address, SERV_PORT, cli_data.connfd, pthread_self());
+    receiving_message(cli_data.connfd);
+    close(cli_data.connfd);
 }
 
 // void get_ip_address()
@@ -86,10 +68,10 @@ void wait_handler(int sig)
 void set_listening_port(in_port_t port)
 {
     // printf("Set server port: %d\n", port);
-    PORT = port;
+    SERV_PORT = port;
 }
 
 in_port_t get_listening_port()
 {
-    return PORT;
+    return SERV_PORT;
 }

@@ -14,7 +14,7 @@
 
 int create_socket();
 
-void listening_socket(int sockfd, struct sockaddr_in* servaddr);
+void listening_socket(int sockfd, struct sockaddr_in* servaddr, uint16_t max_clients);
 
 void connect_to_socket(int sockfd, struct sockaddr_in* servaddr);
 

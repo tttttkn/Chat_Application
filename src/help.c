@@ -1,5 +1,6 @@
 #include "help.h"
 #include <stdio.h>
+#include "server.h"
 
 void print_help(const char* port)
 {
@@ -15,4 +16,20 @@ void print_help(const char* port)
     printf("8. exit\t\t\t\t\t: Close all connections and terminate this app\n");
     printf("***************************************************************\n");
     // printf("Application listening on port %s\n", port);
+}
+
+void print_list_connections(const connection_data_t connection_data[], const int nconnection)
+{
+    printf("ID\t|\tIP Address\t|\tPort\n");
+    printf("-----------------------------------------------\n");
+    for (int i = 0; i < nconnection; i++)
+    {
+        printf("%d\t|\t%s\t|\t%d\n", nconnection, connection_data[i].ip_address, connection_data[i].port);
+    }
+}
+
+
+void print_server_port()
+{
+    printf("Your port: %d", SERV_PORT);
 }
