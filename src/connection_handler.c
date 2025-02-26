@@ -10,20 +10,12 @@ int nconn = 0;
 
 pthread_mutex_t mutex = PTHREAD_MUTEX_INITIALIZER;
 pthread_cond_t cond = PTHREAD_COND_INITIALIZER;
-// static nfds = 0;
 
 void send_message(int conn_id, char *msg)
 {
-    printf("connid: %d\n", conn_id);
-    printf("sockfd: %d\n", conn_data[conn_id].sockfd);
-    printf("connid: %s\n", msg);
     if (write(conn_data[conn_id].sockfd, msg, strlen(msg)) == -1)
     {
         printf("Can not send message\n");
-    }
-    else
-    {
-        printf("Send message successfully\n");
     }
 }
 
@@ -34,25 +26,11 @@ void add_connection_data(char *ip_address, in_port_t port, int sockfd, pthread_t
     conn_data[nconn].port = port;
     conn_data[nconn].sockfd = sockfd;
     conn_data[nconn].thread_id = thread_id;
-    // printf("connection added number: %d\n", nconn);
-    // printf("ip_address: %s\n", conn_data[nconn].ip_address);
-    // printf("Port: %d\n", conn_data[nconn].port);
-    // printf("sockfd: %d\n", conn_data[nconn].sockfd);
-    // printf("thread id: %ld\n", conn_data[nconn].thread_id);
+
     nconn++;
 
     pthread_cond_signal(&cond);
     pthread_mutex_unlock(&mutex);
-
-    // char buf[1024];
-    // while (1)
-    // {
-    //     bzero(buf, 1024);
-    //     if (read(sockfd, buf, 1024) != 0)
-    //     {
-    //         printf("Message: %s\n", buf);
-    //     }
-    // }
 }
 
 void receiving_message(int sockfd)
@@ -67,8 +45,53 @@ void receiving_message(int sockfd)
         FD_SET(sockfd, &readfds);
 
         select(nfds, &readfds, NULL, NULL, NULL);
+
         bzero(buf, 1024);
-        read(sockfd, buf, 1024);
+        if (read(sockfd, buf, 1024) == 0)
+        {
+            int connection_id = find_conn_id_by_sockfd(sockfd);
+            printf("\nConnection with %s on port %d\n", conn_data[connection_id].ip_address, conn_data[connection_id].port);
+            terminate_connection(connection_id);
+        }
         printf("\nMessage from : %s\n", buf);
     }
+}
+
+void terminate_connection(int conn_id)
+{
+    pthread_mutex_lock(&mutex);
+    if (close(conn_data[conn_id].sockfd) == -1)
+    {
+    }
+    else
+    {
+        pthread_cancel(conn_data[conn_id].thread_id);
+        remove_connection_from_list(conn_id);
+    }
+    pthread_mutex_unlock(&mutex);
+}
+
+void remove_connection_from_list(int conn_id)
+{
+    for (int i = conn_id; i < nconn - 1; i++)
+    {
+        conn_data[i] = conn_data[i + 1];
+    }
+    nconn--;
+}
+
+int find_conn_id_by_sockfd(int sockfd)
+{
+    int i = 0;
+    pthread_mutex_lock(&mutex);
+    for (i = 0; i < nconn; i++)
+    {
+        if (conn_data[i].sockfd == sockfd)
+        {
+            break;
+        }
+    }
+    pthread_mutex_unlock(&mutex);
+
+    return i;
 }

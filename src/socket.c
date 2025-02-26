@@ -32,10 +32,6 @@ void listening_socket(int sockfd, struct sockaddr_in *servaddr, uint16_t max_cli
         printf("Listen failed...\n");
         exit(0);
     }
-    else
-    {
-        printf("Application listening on port %d\n", ntohs(servaddr->sin_port));
-    }
 }
 
 void connect_to_socket(int sockfd, struct sockaddr_in *servaddr)
@@ -43,7 +39,6 @@ void connect_to_socket(int sockfd, struct sockaddr_in *servaddr)
     if (connect(sockfd, (SA *)servaddr, sizeof(*servaddr)) != 0)
     {
         printf("connection to %s failed...\n", inet_ntoa(servaddr->sin_addr));
-        exit(0);
     }
     else
     {

@@ -15,14 +15,14 @@ int main(int argc, char *argv[])
         exit(0);
     }
 
-    print_help(argv[1]);
+    print_help();
 
     set_listening_port(atoi(argv[1]));
 
     pthread_t user_handler;
     pthread_t recv_msg;
     pthread_create(&user_handler, NULL, (void *)&command_handler, NULL);
-    
+
     // pthread_create(&recv_msg, NULL, (void *)&receiving_message, NULL);
     server_start_listening();
 

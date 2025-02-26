@@ -71,6 +71,21 @@ bool command_parser(char *words[])
     {
         print_server_port();
     }
+    else if (strcmp(words[0], "terminate") == 0)
+    {
+        // printf("Terminating connection...\n");
+        terminate_connection(atoi(words[1]));
+    }
+    else if (strcmp(words[0], "exit") == 0)
+    {
+        // printf("Exiting...\n");
+        exit(0);
+    }
+    else
+    {
+        printf("Invalid command\n");
+    }
+
 
 
     // printf("Cmd_parser done\n");

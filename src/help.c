@@ -2,7 +2,7 @@
 #include <stdio.h>
 #include "server.h"
 
-void print_help(const char* port)
+void print_help()
 {
     printf("*********************** CHAT APPLICATION **********************\n");
     printf("Use the commands below:\n");
@@ -24,10 +24,9 @@ void print_list_connections(const connection_data_t connection_data[], const int
     printf("-----------------------------------------------\n");
     for (int i = 0; i < nconnection; i++)
     {
-        printf("%d\t|\t%s\t|\t%d\n", nconnection, connection_data[i].ip_address, connection_data[i].port);
+        printf("%d\t|\t%s\t|\t%d\n", i, connection_data[i].ip_address, connection_data[i].port);
     }
 }
-
 
 void print_server_port()
 {

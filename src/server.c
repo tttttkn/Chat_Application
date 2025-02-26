@@ -8,8 +8,6 @@
 
 in_port_t SERV_PORT = 0;
 
-// cli_data_t cli_data[MAXNCLI];
-
 void server_start_listening()
 {
     int sockfd, connfd, len, pid, ncli;
@@ -30,13 +28,16 @@ void server_start_listening()
     while (1)
     {
         connfd = accept(sockfd, (SA *)&cli, &len);
+
         if (connfd < 0)
         {
             printf("server acccept failed...\n");
             exit(0);
         }
-        cli_data_t cli_data;
-        cli_data.connfd = connfd;
+        printf("\nConnected with %s on port %d\n", inet_ntoa(cli.sin_addr), SERV_PORT);
+
+        connection_data_t cli_data;
+        cli_data.sockfd = connfd;
         cli_data.ip_address = inet_ntoa(cli.sin_addr);
         // ncli++;
         pthread_create(&cli_data.thread_id, NULL, (void *)&thread_cli_handler, &cli_data);
@@ -44,7 +45,6 @@ void server_start_listening()
         pthread_mutex_lock(&mutex);
         pthread_cond_wait(&cond, &mutex);
         pthread_mutex_unlock(&mutex);
-
         // pthread_join(cli_data.thread_id, NULL);
     }
 
@@ -52,13 +52,14 @@ void server_start_listening()
     close(sockfd);
 }
 
-void thread_cli_handler(void* arg)
+void thread_cli_handler(void *arg)
 {
     pthread_detach(pthread_self());
-    cli_data_t cli_data = *((cli_data_t*) arg);
-    add_connection_data(cli_data.ip_address, SERV_PORT, cli_data.connfd, pthread_self());
-    receiving_message(cli_data.connfd);
-    close(cli_data.connfd);
+    connection_data_t cli_data = *((connection_data_t *)arg);
+
+    add_connection_data(cli_data.ip_address, SERV_PORT, cli_data.sockfd, pthread_self());
+
+    receiving_message(cli_data.sockfd);
 }
 
 // void get_ip_address()
