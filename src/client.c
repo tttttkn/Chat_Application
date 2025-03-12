@@ -1,7 +1,7 @@
 #include "client.h"
 #include <stdio.h>
 
-void connect_to_server(char *ip, in_port_t port)
+void connect_to_server(char ip[], in_port_t port)
 {
     int sockfd;
     struct sockaddr_in servaddr;
@@ -10,19 +10,23 @@ void connect_to_server(char *ip, in_port_t port)
     bzero(&servaddr, sizeof(servaddr));
 
     servaddr.sin_family = AF_INET;
-    servaddr.sin_addr.s_addr = inet_addr(ip);
+    if (inet_pton(AF_INET, ip, &servaddr.sin_addr) <= 0)
+    {
+        printf("Invalid IP address: %s\n", ip);
+        return;
+    }
     servaddr.sin_port = htons(port);
 
-    // printf("Connecting to socket...%s\n", ip);
     connect_to_socket(sockfd, &servaddr);
 
     connection_data_t serv_data;
-    serv_data.ip_address = inet_ntoa(servaddr.sin_addr);
+    strcpy(serv_data.ip_address, inet_ntoa(servaddr.sin_addr));
     serv_data.sockfd = sockfd;
     serv_data.port = port;
 
     pthread_create(&serv_data.thread_id, NULL, (void *)&thread_serv_handler, (void *)&serv_data);
 
+    // Wait for the thread to be added to the connection list
     pthread_mutex_lock(&mutex);
     pthread_cond_wait(&cond, &mutex);
     pthread_mutex_unlock(&mutex);

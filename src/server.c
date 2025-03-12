@@ -38,23 +38,23 @@ void server_start_listening()
 
         connection_data_t cli_data;
         cli_data.sockfd = connfd;
-        cli_data.ip_address = inet_ntoa(cli.sin_addr);
-        // ncli++;
+        strcpy(cli_data.ip_address, inet_ntoa(cli.sin_addr));
+
         pthread_create(&cli_data.thread_id, NULL, (void *)&thread_cli_handler, &cli_data);
 
+        // Wait for the thread to be added to the connection list
         pthread_mutex_lock(&mutex);
         pthread_cond_wait(&cond, &mutex);
         pthread_mutex_unlock(&mutex);
-        // pthread_join(cli_data.thread_id, NULL);
     }
 
-    // After chatting close the socket
     close(sockfd);
 }
 
 void thread_cli_handler(void *arg)
 {
     pthread_detach(pthread_self());
+
     connection_data_t cli_data = *((connection_data_t *)arg);
 
     add_connection_data(cli_data.ip_address, SERV_PORT, cli_data.sockfd, pthread_self());
@@ -62,13 +62,8 @@ void thread_cli_handler(void *arg)
     receiving_message(cli_data.sockfd);
 }
 
-// void get_ip_address()
-// {
-//     printf("Your computer IP Address: %s\n", inet_ntoa(servaddr.sin_addr));
-// }
 void set_listening_port(in_port_t port)
 {
-    // printf("Set server port: %d\n", port);
     SERV_PORT = port;
 }
 

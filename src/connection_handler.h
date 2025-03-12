@@ -13,12 +13,12 @@ typedef struct
     int sockfd;
     pthread_t thread_id;
     in_port_t port;
-    char *ip_address;
+    char ip_address[INET_ADDRSTRLEN];
 } connection_data_t;
 
 void send_message(int conn_id, char *msg);
 
-void add_connection_data(char *ip_address, in_port_t port, int sockfd, pthread_t thread_id);
+void add_connection_data(char ip_address[], in_port_t port, int sockfd, pthread_t thread_id);
 
 void receiving_message(int sockfd);
 
@@ -27,6 +27,8 @@ void terminate_connection(int conn_id);
 void remove_connection_from_list(int conn_id);
 
 int find_conn_id_by_sockfd(int sockfd);
+
+void terminate_all_connections();
 
 extern connection_data_t conn_data[MAXCONN];
 

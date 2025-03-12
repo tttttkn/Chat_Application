@@ -20,14 +20,11 @@ int main(int argc, char *argv[])
     set_listening_port(atoi(argv[1]));
 
     pthread_t user_handler;
-    pthread_t recv_msg;
     pthread_create(&user_handler, NULL, (void *)&command_handler, NULL);
 
-    // pthread_create(&recv_msg, NULL, (void *)&receiving_message, NULL);
     server_start_listening();
+    pthread_join(user_handler, NULL);
 
-    // pthread_join(user_handler, NULL);
-    pthread_join(recv_msg, NULL);
 
     return 0;
 }

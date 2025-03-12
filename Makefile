@@ -2,7 +2,6 @@
 
 all:
 	gcc src/*.c -o app -pthread
-	echo "Build Done"
 
 memory_check:
 	valgrind --leak-check=full \
