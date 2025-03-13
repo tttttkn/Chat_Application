@@ -51,17 +51,25 @@ void thread_cli_handler(void *arg)
 
     connection_data_t cli_data = *((connection_data_t *)arg);
 
+    pthread_mutex_lock(&mutex);
+
     add_connection_data(cli_data.ip_address, SERV_PORT, cli_data.sockfd, pthread_self());
+
+    // Notify that a new connection has been added
+    pthread_cond_signal(&cond);
+    pthread_mutex_unlock(&mutex);
 
     receiving_message(&cli_data);
 }
 
-void set_listening_port(in_port_t port)
+void print_server_port()
 {
-    SERV_PORT = port;
+    printf("\nYour port: %d\n", SERV_PORT);
 }
 
-in_port_t get_listening_port()
+void print_server_ip()
 {
-    return SERV_PORT;
+    char buffer[INET_ADDRSTRLEN];
+    get_local_ip_address(buffer, INET_ADDRSTRLEN);
+    printf("\nYour IP address: %s\n", buffer);
 }

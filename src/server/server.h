@@ -15,9 +15,8 @@
 
 void thread_cli_handler(void *cli_data);
 void server_start_listening();
-void get_ip_address();
-void set_listening_port(in_port_t port);
-in_port_t get_listening_port();
+void print_server_port();
+void print_server_ip();
 
 extern in_port_t SERV_PORT;
 

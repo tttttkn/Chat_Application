@@ -39,6 +39,8 @@ void terminate_all_connections();
 
 void print_message(char *message, char sender_ip_address[], in_port_t sender_port);
 
+void print_list_connections(const connection_data_t connection_data[], const int connection_count);
+
 extern connection_data_t conn_data[MAXCONN];
 
 extern int nconn;

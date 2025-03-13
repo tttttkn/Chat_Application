@@ -18,25 +18,20 @@ void send_message(int conn_id, char *msg)
     }
     else
     {
-        printf("\nMessage sent sucessfully\n");
+        printf("\nMessage sent successfully\n");
     }
 }
 
 void add_connection_data(char ip_address[], in_port_t port, int sockfd, pthread_t thread_id)
 {
-    pthread_mutex_lock(&mutex);
 
-    // Copy the connection data to the connection list
+    // Add the connection data to the connection list
     strcpy(conn_data[nconn].ip_address, ip_address);
     conn_data[nconn].port = port;
     conn_data[nconn].sockfd = sockfd;
     conn_data[nconn].thread_id = thread_id;
 
     nconn++;
-
-    // Notify the main thread that a new connection has been added
-    pthread_cond_signal(&cond);
-    pthread_mutex_unlock(&mutex);
 }
 
 void receiving_message(connection_data_t *sender_data)
@@ -60,7 +55,10 @@ void receiving_message(connection_data_t *sender_data)
         if (num_read == 0)
         {
             printf("\nLost connection with %s on port %d\n", conn_data[connection_id].ip_address, conn_data[connection_id].port);
+
+            pthread_mutex_lock(&mutex);
             terminate_connection(connection_id);
+            pthread_mutex_unlock(&mutex);
         }
         else if (num_read > 0)
         {
@@ -68,14 +66,13 @@ void receiving_message(connection_data_t *sender_data)
         }
         else
         {
-            printf("\nMessage error\n");
+            printf("\nRead error\n");
         }
     }
 }
 
 void terminate_connection(int conn_id)
 {
-    pthread_mutex_lock(&mutex);
     if (close(conn_data[conn_id].sockfd) == -1)
     {
     }
@@ -84,18 +81,15 @@ void terminate_connection(int conn_id)
         pthread_cancel(conn_data[conn_id].thread_id);
         remove_connection_from_list(conn_id);
     }
-    pthread_mutex_unlock(&mutex);
 }
 
 void remove_connection_from_list(int conn_id)
 {
-    pthread_mutex_lock(&mutex);
     for (int i = conn_id; i < nconn - 1; i++)
     {
         conn_data[i] = conn_data[i + 1];
     }
     nconn--;
-    pthread_mutex_unlock(&mutex);
 }
 
 int find_conn_id_by_sockfd(int sockfd)
@@ -131,4 +125,14 @@ void print_message(char *message, char sender_ip_address[], in_port_t sender_por
     printf("Sender’s Port: %d\n", sender_port);
     printf("Message: \"%s\"\n", message);
     printf("****************************************\n");
+}
+
+void print_list_connections(const connection_data_t connection_data[], const int nconnection)
+{
+    printf("\nID\t|\tIP Address\t|\tPort\n");
+    printf("-----------------------------------------------\n");
+    for (int i = 0; i < nconnection; i++)
+    {
+        printf("%d\t|\t%s\t|\t%d\n", i, connection_data[i].ip_address, connection_data[i].port);
+    }
 }

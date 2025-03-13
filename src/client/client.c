@@ -1,5 +1,4 @@
 #include "client.h"
-#include <stdio.h>
 
 void connect_to_server(char ip[], in_port_t port)
 {
@@ -18,7 +17,10 @@ void connect_to_server(char ip[], in_port_t port)
     servaddr.sin_addr.s_addr = inet_addr(ip);
     servaddr.sin_port = htons(port);
 
-    connect_to_socket(sockfd, &servaddr);
+    if (connect_to_socket(sockfd, &servaddr) == -1)
+    {
+        return;
+    }
 
     connection_data_t serv_data;
     strcpy(serv_data.ip_address, inet_ntoa(servaddr.sin_addr));
@@ -38,41 +40,15 @@ void thread_serv_handler(void *arg)
     pthread_detach(pthread_self());
     connection_data_t serv_data = *((connection_data_t *)arg);
 
+    pthread_mutex_lock(&mutex);
+
     add_connection_data(serv_data.ip_address, serv_data.port, serv_data.sockfd, pthread_self());
 
+    // Notify that a new connection has been added
+    pthread_cond_signal(&cond);
+    pthread_mutex_unlock(&mutex);
+
     receiving_message(&serv_data);
-}
-
-void get_local_ip_address(char *buffer, size_t buflen)
-{
-    struct ifaddrs *ifaddr, *ifa;
-    int family;
-    char host[NI_MAXHOST];
-
-    if (getifaddrs(&ifaddr) == -1)
-    {
-        perror("getifaddrs");
-        exit(EXIT_FAILURE);
-    }
-
-    for (ifa = ifaddr; ifa != NULL; ifa = ifa->ifa_next)
-    {
-        if (ifa->ifa_addr == NULL)
-            continue;
-
-        family = ifa->ifa_addr->sa_family;
-
-        if (family == AF_INET)
-        {
-            if (strcmp(ifa->ifa_name, "lo") != 0) // Skip loopback interface
-            {
-                strncpy(buffer, host, buflen);
-                break;
-            }
-        }
-    }
-
-    freeifaddrs(ifaddr);
 }
 
 int is_valid_server(char ip[], in_port_t port)
@@ -89,9 +65,9 @@ int is_valid_server(char ip[], in_port_t port)
     get_local_ip_address(local_ip_address, INET_ADDRSTRLEN);
 
     // Check if the client is trying to connect to itself
-    if (strcmp(ip, local_ip_address) == 0 && port == get_listening_port())
+    if (strcmp(ip, local_ip_address) == 0 && port == SERV_PORT)
     {
-        printf("\nCannot connect to itself.\n");
+        printf("\nCannot connect to yourself.\n");
         return -1;
     }
 

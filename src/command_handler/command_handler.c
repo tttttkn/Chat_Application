@@ -49,7 +49,7 @@ void command_parser(char *command_input)
     }
     else if (strcmp(command, "myip") == 0 && strtok(NULL, " ") == NULL)
     {
-        // print_server_ip()
+        print_server_ip();
     }
     else if (strcmp(command, "myport") == 0 && strtok(NULL, " ") == NULL)
     {
@@ -76,4 +76,19 @@ void command_parser(char *command_input)
     {
         printf("\nInvalid command\n");
     }
+}
+
+void print_help()
+{
+    printf("\n*********************** CHAT APPLICATION **********************\n");
+    printf("Use the commands below:\n");
+    printf("1. help\t\t\t\t\t: Display user interface options\n");
+    printf("2. myip\t\t\t\t\t: Display IP address of this server\n");
+    printf("3. myport\t\t\t\t: Display listening port of this app\n");
+    printf("4. connect <destination> <port no>\t: Connect to another computer\n");
+    printf("5. list\t\t\t\t\t: List all the current connections of this computer\n");
+    printf("6. terminate <connection id>\t\t: Terminate the connection\n");
+    printf("7. send <connection id> <message>\t: Send a message to the connection\n");
+    printf("8. exit\t\t\t\t\t: Close all connections and terminate this app\n");
+    printf("***************************************************************\n");
 }
