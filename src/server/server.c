@@ -1,16 +1,10 @@
-#include "socket.h"
-#include <arpa/inet.h> // inet_ntoa()
-#include <stdio.h>
-#include <signal.h>
-#include <sys/wait.h>
 #include "server.h"
-#include "connection_handler.h"
 
 in_port_t SERV_PORT = 0;
 
 void server_start_listening()
 {
-    int sockfd, connfd, len, pid, ncli;
+    int sockfd, connfd;
     struct sockaddr_in cli;
     struct sockaddr_in servaddr;
 
@@ -23,15 +17,14 @@ void server_start_listening()
 
     listening_socket(sockfd, &servaddr, MAXNCLI);
 
-    len = sizeof(cli);
-    // ncli = 0;
+    unsigned int len = sizeof(cli);
     while (1)
     {
         connfd = accept(sockfd, (SA *)&cli, &len);
 
         if (connfd < 0)
         {
-            printf("server acccept failed...\n");
+            printf("\nServer acccept failed...\n");
             exit(0);
         }
         printf("\nConnected with %s on port %d\n", inet_ntoa(cli.sin_addr), SERV_PORT);
@@ -39,6 +32,7 @@ void server_start_listening()
         connection_data_t cli_data;
         cli_data.sockfd = connfd;
         strcpy(cli_data.ip_address, inet_ntoa(cli.sin_addr));
+        cli_data.port = SERV_PORT; // Server can not know the port of the client
 
         pthread_create(&cli_data.thread_id, NULL, (void *)&thread_cli_handler, &cli_data);
 
@@ -59,7 +53,7 @@ void thread_cli_handler(void *arg)
 
     add_connection_data(cli_data.ip_address, SERV_PORT, cli_data.sockfd, pthread_self());
 
-    receiving_message(cli_data.sockfd);
+    receiving_message(&cli_data);
 }
 
 void set_listening_port(in_port_t port)

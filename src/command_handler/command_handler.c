@@ -1,14 +1,8 @@
-#include <string.h>
-#include <stdio.h>
-#include <stdlib.h>
-#include "command_handler.h"
-#include "client.h"
-#include <unistd.h>
-#include "connection_handler.h"
-#include "help.h"
-#include "server.h"
 
-void command_handler()
+
+#include "command_handler.h"
+
+void *command_handler()
 {
     char command_input[MAX_INPUT_SIZE];
 
@@ -70,7 +64,7 @@ void command_parser(char *command_input)
         }
         else
         {
-            printf("Invalid command\n");
+            printf("\nInvalid command\n");
         }
     }
     else if (strcmp(command, "exit") == 0 && strtok(NULL, " ") == NULL)
@@ -80,6 +74,6 @@ void command_parser(char *command_input)
     }
     else
     {
-        printf("Invalid command\n");
+        printf("\nInvalid command\n");
     }
 }

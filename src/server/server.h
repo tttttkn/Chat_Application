@@ -2,6 +2,13 @@
 #define SERVER_H
 
 #include <pthread.h>
+#include <stdio.h>
+#include <signal.h>
+#include <sys/wait.h>
+#include <arpa/inet.h> // inet_ntoa()
+
+#include "../connection/socket.h"
+#include "../connection/connection_handler.h"
 
 #define SA struct sockaddr
 #define MAXNCLI 5
