@@ -7,25 +7,32 @@ void connect_to_server(char ip[], in_port_t port)
         return;
     }
 
-    int sockfd;
     struct sockaddr_in servaddr;
+    connection_data_t serv_data;
 
-    sockfd = create_socket();
+    // Initialize servaddr and serv_data
     bzero(&servaddr, sizeof(servaddr));
+    bzero(&serv_data, sizeof(serv_data));
+
+    strcpy(serv_data.ip_address, inet_ntoa(servaddr.sin_addr));
+    serv_data.sockfd = create_socket();
+    serv_data.port = port;
 
     servaddr.sin_family = AF_INET;
     servaddr.sin_addr.s_addr = inet_addr(ip);
     servaddr.sin_port = htons(port);
 
-    if (connect_to_socket(sockfd, &servaddr) == -1)
+    if (connect_to_socket(serv_data.sockfd, &servaddr) == -1)
     {
         return;
     }
 
-    connection_data_t serv_data;
-    strcpy(serv_data.ip_address, inet_ntoa(servaddr.sin_addr));
-    serv_data.sockfd = sockfd;
-    serv_data.port = port;
+    // Send the client's port number to the server
+    char port_str[6];
+    bzero(port_str, sizeof(port_str));
+
+    snprintf(port_str, sizeof(port_str), "%d", SERV_PORT);
+    write(serv_data.sockfd, port_str, sizeof(port_str));
 
     pthread_create(&serv_data.thread_id, NULL, (void *)&thread_serv_handler, (void *)&serv_data);
 
@@ -41,9 +48,7 @@ void thread_serv_handler(void *arg)
     connection_data_t serv_data = *((connection_data_t *)arg);
 
     pthread_mutex_lock(&mutex);
-
-    add_connection_data(serv_data.ip_address, serv_data.port, serv_data.sockfd, pthread_self());
-
+    add_connection_data(&serv_data);
     // Notify that a new connection has been added
     pthread_cond_signal(&cond);
     pthread_mutex_unlock(&mutex);
