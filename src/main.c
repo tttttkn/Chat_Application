@@ -32,5 +32,5 @@ int main(int argc, char *argv[])
 
     pthread_join(server_thread, NULL); // Wait for the server thread to finish
 
-    return 0;
+    return 0
 }
